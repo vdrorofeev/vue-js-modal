@@ -24,6 +24,7 @@ const Plugin = {
      * Plugin API
      */
     Vue.prototype.$modal = {
+      _modalsStack: [],
       show (modal, paramsOrProps, params, events = {}) {
         if (typeof modal === 'string') {
           Plugin.event.$emit('toggle', modal, true, paramsOrProps)
@@ -49,6 +50,14 @@ const Plugin = {
 
       toggle (name, params) {
         Plugin.event.$emit('toggle', name, undefined, params)
+      },
+
+      stash (name) {
+        Plugin.event.$emit('stash', name)
+      },
+
+      unstash (name) {
+        Plugin.event.$emit('unstash', name)
       }
     }
     /**

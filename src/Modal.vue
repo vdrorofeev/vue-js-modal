@@ -139,7 +139,11 @@ export default {
       validator (value) {
         return value >= 0 && value <= 1
       }
-    }
+    },
+    stack: {
+      type: Boolean,
+      default: true,
+    },
   },
   components: {
     Resizer
@@ -182,6 +186,10 @@ export default {
    */
   beforeMount () {
     Modal.event.$on('toggle', this.handleToggleEvent)
+    if (!this.stack) {
+      Modal.event.$on('stash', this.handleStashEvent)
+      Modal.event.$on('unstash', this.handleUnStashEvent)
+    }
 
     window.addEventListener('resize', this.handleWindowResize)
     this.handleWindowResize()
@@ -231,6 +239,9 @@ export default {
    */
   beforeDestroy () {
     Modal.event.$off('toggle', this.handleToggleEvent)
+    Modal.event.$off('stash', this.handleStashEvent)
+    Modal.event.$off('unstash', this.handleUnStashEvent)
+
     window.removeEventListener('resize', this.handleWindowResize)
 
     if (this.clickToClose) {
@@ -383,6 +394,18 @@ export default {
         this.toggle(nextState, params)
       }
     },
+    handleStashEvent (name) {
+      if (this.name === name) {
+      this.$el.style.width = '0'
+      this.$el.style.height = '0'
+      }
+    },
+    handleUnStashEvent (name) {
+      if (this.name === name) {
+      this.$el.style.width = ''
+      this.$el.style.height = ''
+      }
+    },
     /**
      * Initializes modal's size & position,
      * if "reset" flag is set to true - this function will be called
@@ -442,10 +465,24 @@ export default {
      * but AfterEvents ('opened' and 'closed') are moved to `watch.visible`.
      */
     toggle (nextState, params) {
-      const { reset, scrollable, visible } = this
+      const { reset, scrollable, visible, name } = this
 
       if (visible === nextState) {
         return
+      }
+
+      if (!this.stack && nextState) {
+        this.$modal._modalsStack.forEach(modalName => {
+          this.$modal.stash(modalName)
+        })
+        this.$modal._modalsStack.push(name)
+      } else if (!this.stack && !nextState) {
+        this.$modal._modalsStack.pop()
+
+        if (this.$modal._modalsStack.length !== 0) {
+          const lastElement = this.$modal._modalsStack.length - 1
+          this.$modal.unstash(this.$modal._modalsStack[lastElement])
+        }
       }
 
       const beforeEventName = visible
