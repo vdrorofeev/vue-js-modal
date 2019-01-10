@@ -396,14 +396,14 @@ export default {
     },
     handleStashEvent (name) {
       if (this.name === name) {
-      this.$el.style.width = '0'
-      this.$el.style.height = '0'
+      this.$refs.modal.style.width = '0'
+      this.$refs.modal.style.height = '0'
       }
     },
     handleUnStashEvent (name) {
       if (this.name === name) {
-      this.$el.style.width = ''
-      this.$el.style.height = ''
+        this.$refs.modal.style.width = ''
+        this.$refs.modal.style.height = ''
       }
     },
     /**
